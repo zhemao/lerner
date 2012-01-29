@@ -27,5 +27,7 @@ def github():
     
     r.publish(repo_url, message)
 
+    return 'OK'
+
 if __name__ == '__main__':
     WSGIServer(('0.0.0.0', 8080), app).serve_forever()
