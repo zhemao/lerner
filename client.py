@@ -21,6 +21,7 @@ if __name__ == '__main__':
     ps.subscribe(config['channels'])
 
     for msg in ps.listen():
-        n = notify.Notification(msg['data'])
-        n.show()
+        if msg['type'] == 'message':
+            n = notify.Notification(msg['data'])
+            n.show()
 
