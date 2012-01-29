@@ -1,5 +1,5 @@
 {
-	"host": "ec2.zhehaomao.com",
+	"host": "yunhe-1.zhehaomao.com",
 	"port": 6379,
-	"channels": ["https://github.com/zhemao/zhemao.github.com"]
+	"channels": ["zhemao/zhemao.github.com"]
 }
