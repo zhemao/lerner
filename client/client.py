@@ -6,7 +6,7 @@ import sys
 import os
 import pynotify as notify
 
-if __name__ == '__main__':
+def main():
     notify.init("notistream")
 
     if len(sys.argv) < 2:
@@ -25,3 +25,5 @@ if __name__ == '__main__':
             n = notify.Notification(msg['data'])
             n.show()
 
+if __name__ == '__main__':
+    main()
