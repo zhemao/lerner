@@ -1,24 +1,24 @@
 #!/usr/bin/env python
 
 import redisd
-import pymongo
+#import pymongo
 
 class Notifier:
     def __init__(self):
         self.channels = {}
-        self.db = pymongo.Connection().notistream
+        #self.db = pymongo.Connection().notistream
         self.commands = {'subscribe': self.subscribe,
                          'publish': self.publish}
 
-    def login(self, sock, name, key):
-        user = self.db.users.find({'name': name})
+ #   def login(self, sock, name, key):
+  #      user = self.db.users.find({'name': name})
 
-        if user is None:
-            sock.rep_error('No such user')
-        elif user.key != key:
-            sock.rep_error('Wrong key')
-        else:
-            sock.rep_line('OK')
+   #     if user is None:
+    #        sock.rep_error('No such user')
+     #   elif user.key != key:
+      #      sock.rep_error('Wrong key')
+       # else:
+        #    sock.rep_line('OK')
 
     def subscribe(self, sock, *channames):
         for i, name in enumerate(channames):
