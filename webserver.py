@@ -8,6 +8,7 @@ import redis
 ps = redis.StrictRedis().pubsub()
 
 app = Flask(__name__)
+app.config['DEBUG'] = True
 
 @app.route('/github', methods=['POST'])
 def github():
