@@ -1,0 +1,6 @@
+*2
+$9
+subscribe
+$8
+channel1
+
