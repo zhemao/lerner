@@ -4,6 +4,7 @@ from flask import Flask, request
 from gevent import monkey; monkey.patch_socket()
 from gevent.wsgi import WSGIServer
 import redis
+import json
 
 ps = redis.StrictRedis().pubsub()
 
@@ -12,7 +13,7 @@ app.config['DEBUG'] = True
 
 @app.route('/github', methods=['POST'])
 def github():
-    payload = request.form['payload']
+    payload = json.loads(request.form['payload'])
     owner = payload['repository']['owner']['name']
     repo_name = owner + '/' + payload['repository']['name']
     repo_url = payload['repository']['url']
