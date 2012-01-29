@@ -34,7 +34,7 @@ class RedisSocket:
         self.sock.send(':' + str(num) + CRLF)
 
     def rep_error(self, errmsg):
-        self.sock.send('-' + errmsg + CRLF)
+        self.sock.send('-ERR ' + errmsg + CRLF)
 
     def rep_bulk(self, data):
         self.sock.send('$' + str(len(data)) + CRLF + data + CRLF)
@@ -71,7 +71,7 @@ class RedisServer(StreamServer):
                 nbytes = 0
                 if len(cmdargs) == ncmds:
                     ncmds = 0
-                    command = self.commands.get(cmdargs[0])
+                    command = self.commands.get(cmdargs[0].lower())
                     if command is None:
                         rdsock.rep_error('No such command')
                     else:
