@@ -1,26 +1,15 @@
 #!/usr/bin/env python
 
 import redisd
-#import pymongo
+import settings
 
 class Notifier:
     def __init__(self):
         self.channels = {}
         self.clients = {}
-        #self.db = pymongo.Connection().notistream
         self.commands = {'subscribe': self.subscribe,
                          'publish': self.publish,
                          'close': self.close}
-
- #   def login(self, sock, name, key):
-  #      user = self.db.users.find({'name': name})
-
-   #     if user is None:
-    #        sock.rep_error('No such user')
-     #   elif user.key != key:
-      #      sock.rep_error('Wrong key')
-       # else:
-        #    sock.rep_line('OK')
 
     def subscribe(self, sock, *channames):
         for i, name in enumerate(channames):
@@ -59,5 +48,7 @@ class Notifier:
 
 if __name__ == '__main__':
     notifier = Notifier()
-    server = redisd.RedisServer(('0.0.0.0', 6379), notifier.commands)
+    
+    port = settings.PUBSUB_PORT if hasattr(settings, 'PUBSUB_PORT') else 6379
+    server = redisd.RedisServer(('0.0.0.0', port), notifier.commands)
     server.serve_forever()
