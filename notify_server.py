@@ -42,5 +42,5 @@ class Notifier:
 
 if __name__ == '__main__':
     notifier = Notifier()
-    server = redisd.RedisServer(('127.0.0.1', 6379), notifier.commands)
+    server = redisd.RedisServer(('0.0.0.0', 6379), notifier.commands)
     server.serve_forever()
