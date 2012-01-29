@@ -23,7 +23,7 @@ def github():
 
     message = '%s commited to %s: %s' % (author, repo_name, commit_message)
 
-    print(message)
+    print(repo_url)
     
     r.publish(repo_url, message)
 
