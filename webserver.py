@@ -6,7 +6,7 @@ from gevent.wsgi import WSGIServer
 import redis
 import json
 
-ps = redis.StrictRedis().pubsub()
+r = redis.StrictRedis()
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -25,7 +25,7 @@ def github():
 
     print(message)
     
-    ps.publish(repo_url, message)
+    r.publish(repo_url, message)
 
 if __name__ == '__main__':
     WSGIServer(('0.0.0.0', 8080), app).serve_forever()
