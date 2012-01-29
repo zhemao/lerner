@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 @app.route('/github', methods=['POST'])
 def github():
-    payload = request.POST['payload']
+    payload = request.form['payload']
     owner = payload['repository']['owner']['name']
     repo_name = owner + '/' + payload['repository']['name']
     repo_url = payload['repository']['url']
@@ -20,6 +20,8 @@ def github():
     author = headcommit['author']['name']
 
     message = '%s commited to %s: %s' % (author, repo_name, commit_message)
+
+    print(message)
     
     ps.publish(repo_url, message)
 
