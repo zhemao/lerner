@@ -10,7 +10,7 @@ def main():
     notify.init("notistream")
 
     if len(sys.argv) < 2:
-        f = open(os.path.expanduser('~/.notistream.json'))
+        f = open(os.path.expanduser('~/.notistream/config.json'))
     else:
         f = open(sys.argv[1])
 
