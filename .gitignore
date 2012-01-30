@@ -3,3 +3,4 @@
 env
 settings.py
 config.json
+nohup.out
