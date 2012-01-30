@@ -37,7 +37,7 @@ you could do
 
 # Running the server
 
-Change directory into the `server` directory. To install all dependencies, run
+Change directory into the "server" directory. To install all dependencies, run
 	
 	pip install -r requirements.txt
 
