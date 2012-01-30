@@ -35,6 +35,12 @@ you could do
 
 	curl -d "message=hello&channel=channel1" http://yourserver.com/
 
+# Github notifications
+
+To get github notifications, enter the url of /github on the webserver as a
+post-receive hook to the repo. Notifications will be posted to the channel
+username/reponame. 
+
 # Running the server
 
 Change directory into the "server" directory. To install all dependencies, run
