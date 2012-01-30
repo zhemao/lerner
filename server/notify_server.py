@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import redisd
+import socket
 import settings
 
 class Notifier:
@@ -9,7 +10,7 @@ class Notifier:
         self.clients = {}
         self.commands = {'subscribe': self.subscribe,
                          'publish': self.publish,
-                         'close': self.close}
+                         'close': self.on_close}
 
     def subscribe(self, sock, *channames):
         for i, name in enumerate(channames):
@@ -35,16 +36,26 @@ class Notifier:
             sock.rep_integer(0)
         else:
             for fileno in chan:
-                chan[fileno].rep_multibulk(['message', channame, message])
+                try:
+                    chan[fileno].rep_multibulk(['message', channame, message])
+                except socket.error, e:
+                    self.remove_client(fileno)
+                    raise e
+                except IOError, e:
+                    self.remove_client(fileno)
+                    raise e
             sock.rep_integer(len(chan))
 
-    def close(self, sock):
-        fileno = sock.fileno()
+    def remove_client(self, fileno):
         chan_list = self.clients.get(fileno)
         if chan_list is not None:
             for channame in chan_list:
                 del self.channels[channame][fileno]
             del self.clients[fileno]
+
+    def on_close(self, sock):
+        fileno = sock.fileno()
+        self.remove_client(fileno)
 
 if __name__ == '__main__':
     notifier = Notifier()
