@@ -13,7 +13,7 @@ and subscribe to channels. A webserver receives webhooks via POST requests
 and then publishes the information to the Pub/Sub server. Connected clients 
 will then see the notification on their desktop/phone/whatever.
 
-# Installing and Running the Client
+## Installing and Running the Client
 
 To install the client, just do `python setup.py install`. 
 
@@ -25,7 +25,7 @@ Pub/Sub server. Port is its port (defaulting to Redis's default port of 6379).
 Channels is a comma-separated list of the channels to which you would like to
 subscribe.
 
-# Posting a notification
+## Posting a notification
 
 To send a webhook notification, make a post request to the root url of the 
 webserver. The parameters of the request should be "channel", which would be
@@ -35,13 +35,13 @@ you could do
 
 	curl -d "message=hello&channel=channel1" http://yourserver.com/
 
-# Github notifications
+## Github notifications
 
 To get github notifications, enter the url of /github on the webserver as a
 post-receive hook to the repo. Notifications will be posted to the channel
 username/reponame. 
 
-# Running the server
+## Running the server
 
 Change directory into the "server" directory. To install all dependencies, run
 	
