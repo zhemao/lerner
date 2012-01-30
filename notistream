@@ -4,10 +4,10 @@ import redis
 import json
 import sys
 import os
-import pynotify as notify
+from gi.repository import Notify
 
 def main():
-    notify.init("notistream")
+    Notify.init("notistream")
 
     if len(sys.argv) < 2:
         f = open(os.path.expanduser('~/.notistream/config.json'))
@@ -16,13 +16,13 @@ def main():
 
     config = json.load(f)
 
-    r = redis.StrictRedis(host=config['host'], port=config['port'])
+    r = redis.Redis(host=config['host'], port=config['port'])
     ps = r.pubsub()
     ps.subscribe(config['channels'])
 
     for msg in ps.listen():
         if msg['type'] == 'message':
-            n = notify.Notification(msg['data'])
+            n = Notify.Notification.new('Notistream', msg['data'], None)
             n.show()
 
 if __name__ == '__main__':
