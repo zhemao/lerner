@@ -4,18 +4,38 @@ import redis
 import json
 import sys
 import os
+import shutil
+import json
+import resource
+import signal
 from gi.repository import Notify
 
-def main():
-    Notify.init("notistream")
+CONFIG_DIR = os.path.expanduser("~/.notistream")
+USER_CONFIG = os.path.join(CONFIG_DIR, "config.json")
+CLIENT_PID = os.path.join(CONFIG_DIR, "client.pid")
 
-    if len(sys.argv) < 2:
-        f = open(os.path.expanduser('~/.notistream/config.json'))
-    else:
-        f = open(sys.argv[1])
+def create_config():
+    host = raw_input("hostname: ")
+    rawport = raw_input("port [default 6379]: ")
+    channels = raw_input("channels (comma separated list) ").split(',')
+    
+    channels = [chan.strip() for chan in channels]
+    port = 6379 if rawport == '' else int(rawport)
+    config = {'host': host, 'port': port, 'channels': channels}
 
-    config = json.load(f)
+    if not os.path.isdir(CONFIG_DIR):
+        os.mkdir(CONFIG_DIR, 0700)
 
+    f = open(USER_CONFIG, 'w')
+    json.dump(config, f, indent=4)
+    f.close()
+    os.chmod(USER_CONFIG, 0700)
+
+    print("Configuration file created in " + USER_CONFIG)
+
+    return open(USER_CONFIG)
+
+def listen_for_notifications(config):
     r = redis.Redis(host=config['host'], port=config['port'])
     ps = r.pubsub()
     ps.subscribe(config['channels'])
@@ -24,6 +44,92 @@ def main():
         if msg['type'] == 'message':
             n = Notify.Notification.new('Notistream', msg['data'], None)
             n.show()
+
+def cleanup():
+    os.remove(CLIENT_PID)
+    exit()
+
+def daemonize(target, args=()):
+    if hasattr(os, "devnull"):
+        DEVNULL = os.devnull
+    else:
+        DEVNULL = "/dev/null"
+
+    pid = os.fork()
+
+    if pid == 0:
+        
+        pid = os.fork()
+        
+        if pid == 0:
+            os.chdir(CONFIG_DIR)
+            os.umask(0)
+        else:
+            f = open(CLIENT_PID, "w")
+            f.write(str(pid))
+            f.close()
+            exit()
+    else:
+        exit()
+
+    maxfd = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
+    if maxfd == resource.RLIM_INFINITY:
+        maxfd = 1024
+
+    for fd in range(0, maxfd):
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+
+    os.open(DEVNULL, os.O_RDWR)
+
+    os.dup2(0, 1)
+    os.dup2(0, 2)
+
+    target(*args)
+
+    signal.signal(signal.SIGINT, cleanup)
+    signal.signal(signal.SIGTERM, cleanup)
+
+    cleanup()
+
+def main():
+    Notify.init("notistream")
+
+    if len(sys.argv) < 2:
+        if not os.path.isfile(USER_CONFIG):
+            print "You do not yet have a configuration file."
+            print "You will need one to continue."
+            create = (raw_input("Do you want to create one? [y/n] ") == 'y')
+            if create:
+                f = create_config()
+            else:
+                print "Exiting..."
+                exit(1)
+        else:
+            f = open(USER_CONFIG)
+    else:
+        f = open(sys.argv[1])
+
+    config = json.load(f)
+    f.close()
+
+    print("Listening for notifications")
+    if os.path.isfile(CLIENT_PID):
+        ans = raw_input("A client is already running. Restart it? [y/n] ")
+        if ans == 'y':
+            f = open(CLIENT_PID)
+            pid = int(f.read())
+            f.close()
+            
+            os.kill(pid, signal.SIGINT)
+            os.kill(pid, signal.SIGTERM)
+            os.kill(pid, signal.SIGKILL)
+        else:
+            exit()
+
+    daemonize(listen_for_notifications, (config,))
 
 if __name__ == '__main__':
     main()
