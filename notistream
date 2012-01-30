@@ -13,6 +13,7 @@ from gi.repository import Notify
 CONFIG_DIR = os.path.expanduser("~/.notistream")
 USER_CONFIG = os.path.join(CONFIG_DIR, "config.json")
 CLIENT_PID = os.path.join(CONFIG_DIR, "client.pid")
+CLIENT_LOG = os.path.join(CONFIG_DIR, "client.log")
 
 def create_config():
     host = raw_input("hostname: ")
@@ -45,7 +46,8 @@ def listen_for_notifications(config):
             n = Notify.Notification.new('Notistream', msg['data'], None)
             n.show()
 
-def cleanup():
+def cleanup(sig, stack=None):
+    print("Cleaning up")
     os.remove(CLIENT_PID)
     exit()
 
@@ -83,16 +85,16 @@ def daemonize(target, args=()):
             pass
 
     os.open(DEVNULL, os.O_RDWR)
+    os.open(CLIENT_LOG, os.O_WRONLY|os.O_CREAT|os.O_APPEND)
 
-    os.dup2(0, 1)
-    os.dup2(0, 2)
-
-    target(*args)
-
+    os.dup2(1, 2)
+    
     signal.signal(signal.SIGINT, cleanup)
     signal.signal(signal.SIGTERM, cleanup)
+    
+    target(*args)
 
-    cleanup()
+    cleanup(signal.SIGINT)
 
 def main():
     Notify.init("notistream")
@@ -122,10 +124,12 @@ def main():
             f = open(CLIENT_PID)
             pid = int(f.read())
             f.close()
-            
-            os.kill(pid, signal.SIGINT)
-            os.kill(pid, signal.SIGTERM)
-            os.kill(pid, signal.SIGKILL)
+            try:
+                os.kill(pid, signal.SIGINT)
+                os.kill(pid, signal.SIGTERM)
+                os.kill(pid, signal.SIGKILL)
+            except OSError:
+                pass
         else:
             exit()
 
