@@ -18,11 +18,12 @@ CLIENT_LOG = os.path.join(CONFIG_DIR, "client.log")
 def create_config():
     host = raw_input("hostname: ")
     rawport = raw_input("port [default 6379]: ")
-    channels = raw_input("channels (comma separated list) ").split(',')
+    channels = raw_input("channels (comma separated list): ").split(',')
+    auth = raw_input("auth key (leave blank if no auth): ")
     
     channels = [chan.strip() for chan in channels]
     port = 6379 if rawport == '' else int(rawport)
-    config = {'host': host, 'port': port, 'channels': channels}
+    config = {'host': host, 'port': port, 'channels': channels, 'auth':auth}
 
     if not os.path.isdir(CONFIG_DIR):
         os.mkdir(CONFIG_DIR, 0700)
@@ -38,6 +39,10 @@ def create_config():
 
 def listen_for_notifications(config):
     r = redis.Redis(host=config['host'], port=config['port'])
+    
+    if config['auth'] != '':
+        r.execute_command('auth', config['auth'])
+
     ps = r.pubsub()
     ps.subscribe(config['channels'])
 
@@ -92,9 +97,10 @@ def daemonize(target, args=()):
     signal.signal(signal.SIGINT, cleanup)
     signal.signal(signal.SIGTERM, cleanup)
     
-    target(*args)
-
-    cleanup(signal.SIGINT)
+    try: 
+        target(*args)
+    finally:
+        cleanup(signal.SIGINT)
 
 def main():
     Notify.init("notistream")
