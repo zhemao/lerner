@@ -31,7 +31,7 @@ def create_config():
     f = open(USER_CONFIG, 'w')
     json.dump(config, f, indent=4)
     f.close()
-    os.chmod(USER_CONFIG, 0700)
+    os.chmod(USER_CONFIG, 0600)
 
     print("Configuration file created in " + USER_CONFIG)
 
@@ -91,6 +91,8 @@ def daemonize(target, args=()):
 
     os.open(DEVNULL, os.O_RDWR)
     os.open(CLIENT_LOG, os.O_WRONLY|os.O_CREAT|os.O_APPEND)
+
+    os.chmod(CLIENT_LOG, 0644)
 
     os.dup2(1, 2)
     
