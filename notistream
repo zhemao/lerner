@@ -8,7 +8,9 @@ import shutil
 import json
 import resource
 import signal
+import socket
 from gi.repository import Notify
+from redis.exceptions import ResponseError, ConnectionError
 
 CONFIG_DIR = os.path.expanduser("~/.notistream")
 USER_CONFIG = os.path.join(CONFIG_DIR, "config.json")
@@ -99,31 +101,40 @@ def daemonize(target, args=()):
     signal.signal(signal.SIGINT, cleanup)
     signal.signal(signal.SIGTERM, cleanup)
     
-    try: 
-        target(*args)
+    try:
+        while True:
+            try: 
+                target(*args)
+            except socket.error:
+                pass
+            except ConnectionError:
+                print("Could not connect. Retrying...")
+                continue
+            print "Connection closed. Restarting"
     finally:
         cleanup(signal.SIGINT)
 
 def main():
     Notify.init("notistream")
 
-    if len(sys.argv) < 2:
-        if not os.path.isfile(USER_CONFIG):
-            print "You do not yet have a configuration file."
-            print "You will need one to continue."
-            create = (raw_input("Do you want to create one? [y/n] ") == 'y')
-            if create:
-                f = create_config()
-            else:
-                print "Exiting..."
-                exit(1)
+    if not os.path.isfile(USER_CONFIG):
+        print "You do not yet have a configuration file."
+        print "You will need one to continue."
+        create = (raw_input("Do you want to create one? [y/n] ") == 'y')
+        if create:
+            f = create_config()
         else:
-            f = open(USER_CONFIG)
+            print "Exiting..."
+            exit(1)
     else:
-        f = open(sys.argv[1])
+        f = open(USER_CONFIG)
 
     config = json.load(f)
     f.close()
+    
+    if len(sys.argv) > 1 and sys.argv[1] == 'no-daemon':
+        listen_for_notifications(config)
+        return
 
     print("Listening for notifications")
     if os.path.isfile(CLIENT_PID):
