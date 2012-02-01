@@ -14,6 +14,10 @@ app.config.from_object('settings')
 r = redis.StrictRedis(host=app.config.get('PUBSUB_HOST', '127.0.0.1'),
                       port=app.config.get('PUBSUB_PORT', 6379))
 
+auth = app.config.get('AUTH', '')
+if auth:
+    r.execute_command('auth', auth)
+
 @app.route('/', methods=['POST'])
 def generic():
     message = request.form['message']

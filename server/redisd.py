@@ -59,6 +59,9 @@ class RedisServer(StreamServer):
         nbytes = 0
         rdsock = RedisSocket(sock)
 
+        if 'connect' in self.commands:
+            self.commands['connect'](rdsock)
+
         for line in sock_readlines(sock):
             if len(line) == 0:
                 continue

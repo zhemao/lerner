@@ -3,33 +3,37 @@
 import redisd
 import socket
 import settings
+from collections import defaultdict
+
+AUTH = getattr(settings, 'AUTH', '')
 
 class Notifier:
     def __init__(self):
-        self.channels = {}
-        self.clients = {}
-        self.commands = {'subscribe': self.subscribe,
-                         'publish': self.publish,
-                         'close': self.on_close}
+        self.channels = defaultdict(dict)
+        self.clients = defaultdict(dict)
+        self.authenticated = defaultdict(bool)
+        self.commands = {
+            'connect': self.on_connect,
+            'auth': self.auth,
+            'subscribe': self.subscribe,
+            'publish': self.publish,
+            'close': self.on_close
+        }
 
     def subscribe(self, sock, *channames):
+        if not self.authenticated[sock.sock.fileno()]:
+            sock.rep_error('Not Authenticated')
+            return
         for i, name in enumerate(channames):
-            chan = self.channels.get(name)
-            if chan is None:
-                self.channels[name] = {sock.sock.fileno(): sock}
-            else:
-                chan[sock.sock.fileno()] = sock
-
+            self.channels[name][sock.sock.fileno()] = sock
             sock.rep_multibulk(['subscribe', name, i+1])
         
-        
-        chan_list = self.clients.get(sock.sock.fileno())
-        if chan_list is None:
-            self.clients[sock.sock.fileno()] = list(channames)
-        else:
-            chan_list.extend(channels)
+        self.clients[sock.sock.fileno()].extend(channels)
 
     def publish(self, sock, channame, message):
+        if not self.authenticated[sock.sock.fileno()]:
+            sock.rep_error('Not Authenticated')
+            return
         chan = self.channels.get(channame)
         if chan is None:
             self.channels[channame] = {}
@@ -46,20 +50,30 @@ class Notifier:
                     raise e
             sock.rep_integer(len(chan))
 
+    def auth(self, sock, key):
+        if key == AUTH:
+            self.authenticated[sock.sock.fileno()] = True
+            sock.rep_line('OK')
+        else:
+            sock.rep_error('Incorrect Auth Key')
+
     def remove_client(self, fileno):
-        chan_list = self.clients.get(fileno)
-        if chan_list is not None:
-            for channame in chan_list:
+        if fileno in self.clients:
+            for channame in self.clients[fileno]:
                 del self.channels[channame][fileno]
             del self.clients[fileno]
 
     def on_close(self, sock):
         fileno = sock.fileno()
         self.remove_client(fileno)
+    
+    def on_connect(self, sock):
+        if len(AUTH) == 0:
+            self.authenticated[sock.sock.fileno()] = True
 
 if __name__ == '__main__':
     notifier = Notifier()
     
-    port = settings.PUBSUB_PORT if hasattr(settings, 'PUBSUB_PORT') else 6379
+    port = getattr(settings, 'PUBSUB_PORT', 6379)
     server = redisd.RedisServer(('0.0.0.0', port), notifier.commands)
     server.serve_forever()
