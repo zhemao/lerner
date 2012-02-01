@@ -10,7 +10,7 @@ AUTH = getattr(settings, 'AUTH', '')
 class Notifier:
     def __init__(self):
         self.channels = defaultdict(dict)
-        self.clients = defaultdict(dict)
+        self.clients = {}
         self.authenticated = defaultdict(bool)
         self.commands = {
             'connect': self.on_connect,
@@ -28,7 +28,7 @@ class Notifier:
             self.channels[name][sock.sock.fileno()] = sock
             sock.rep_multibulk(['subscribe', name, i+1])
         
-        self.clients[sock.sock.fileno()].extend(channels)
+        self.clients[sock.sock.fileno()] = list(channels)
 
     def publish(self, sock, channame, message):
         if not self.authenticated[sock.sock.fileno()]:
