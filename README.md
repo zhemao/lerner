@@ -41,6 +41,12 @@ To get github notifications, enter the url of /github on the webserver as a
 post-receive hook to the repo. Notifications will be posted to the channel
 username/reponame. 
 
+## Twilio notifications
+
+To get SMS notifications from Twilio, enter the url of /twilio on the webserver
+as the SMS url on your Twilio account. The channel to which notifications will
+be posted will be your Twilio number (no dashes or parens, just the digits).
+
 ## Running the server
 
 Change directory into the "server" directory. To install all dependencies, run
