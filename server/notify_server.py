@@ -28,7 +28,7 @@ class Notifier:
             self.channels[name][sock.sock.fileno()] = sock
             sock.rep_multibulk(['subscribe', name, i+1])
         
-        self.clients[sock.sock.fileno()] = list(channels)
+        self.clients[sock.sock.fileno()] = list(channames)
 
     def publish(self, sock, channame, message):
         if not self.authenticated[sock.sock.fileno()]:
