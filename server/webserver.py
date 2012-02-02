@@ -23,9 +23,9 @@ def generic():
     message = request.form['message']
     channel = request.form['channel']
 
-    r.publish(channel, message)
+    notified = r.publish(channel, message)
     
-    return 'OK'
+    return str(notified)
 
 @app.route('/github', methods=['POST'])
 def github():
@@ -38,9 +38,9 @@ def github():
 
     message = '%s commited to %s: %s' % (author, repo_name, commit_message)
 
-    r.publish(repo_name, message)
+    notified = r.publish(repo_name, message)
 
-    return 'OK'
+    return str(notified)
 
 if __name__ == '__main__':
     port = app.config.get('WEB_PORT', 8080)
