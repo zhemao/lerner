@@ -42,6 +42,16 @@ def github():
 
     return str(notified)
 
+@app.route('/twilio', methods=['POST'])
+def twilio():
+    channel = request.form['To']
+    title = 'Message from ' + request.form['From']
+    message = title + ':' + request.form['Body']
+    
+    notified = r.publish(channel, message)
+
+    return str(notified)
+
 if __name__ == '__main__':
     port = app.config.get('WEB_PORT', 8080)
     
