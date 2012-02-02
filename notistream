@@ -50,7 +50,13 @@ def listen_for_notifications(config):
 
     for msg in ps.listen():
         if msg['type'] == 'message':
-            n = Notify.Notification.new('Notistream', msg['data'], None)
+            if ':' in msg['data']:
+                title, text = tuple(msg['data'].split(':'))
+                text = text.strip()
+            else:
+                title = 'Notistream'
+                text = msg['data']
+            n = Notify.Notification.new(title, text, None)
             n.show()
 
 def cleanup(sig, stack=None):
