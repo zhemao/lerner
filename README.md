@@ -1,6 +1,6 @@
-# Notistream
+# Lerner
 
-Notistream is based around the concept of [webhooks](http://wiki.webhooks.org), 
+Lerner is based around the concept of [webhooks](http://wiki.webhooks.org), 
 push notifications sent via HTTP POST requests. Webhooks are great if you have 
 a server that can accept POST requests, but what if you want to receive push 
 notifications on a phone or a computer on a wifi connection. To receive push 
@@ -17,7 +17,7 @@ will then see the notification on their desktop/phone/whatever.
 
 To install the client, just do `python setup.py install`. 
 
-The command to run the client is `notistream`. The first time you run it,
+The command to run the client is `lerner`. The first time you run it,
 the program will ask you to enter info for a configuration file.
 
 It will ask you for host, port, and channels. Host is the hostname of the 
