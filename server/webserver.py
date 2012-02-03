@@ -48,9 +48,12 @@ def twilio():
     title = 'Message from ' + request.form['From']
     message = title + ':' + request.form['Body']
     
-    notified = r.publish(channel, message)
+    r.publish(channel, message)
 
-    return str(notified)
+    response = '''<?xml version="1.0" encoding="UTF-8"?>
+                  <Response></Response>'''
+
+    return response
 
 if __name__ == '__main__':
     port = app.config.get('WEB_PORT', 8080)
