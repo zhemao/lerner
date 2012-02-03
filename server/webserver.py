@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import Flask, request
+from flask import Flask, request, make_response
 from gevent import monkey; monkey.patch_socket()
 from gevent.wsgi import WSGIServer
 import redis
@@ -48,10 +48,10 @@ def twilio():
     title = 'Message from ' + request.form['From']
     message = title + ':' + request.form['Body']
     
-    r.publish(channel, message)
+    notified = r.publish(channel, message)
 
-    response = '''<?xml version="1.0" encoding="UTF-8"?>
-                  <Response></Response>'''
+    response = make_response(channel + " " + str(notified), 200)
+    response.headers['Content-Type'] = 'text/plain'
 
     return response
 
