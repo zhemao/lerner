@@ -12,7 +12,7 @@ import socket
 from gi.repository import Notify
 from redis.exceptions import ResponseError, ConnectionError
 
-CONFIG_DIR = os.path.expanduser("~/.notistream")
+CONFIG_DIR = os.path.expanduser("~/.lerner")
 USER_CONFIG = os.path.join(CONFIG_DIR, "config.json")
 CLIENT_PID = os.path.join(CONFIG_DIR, "client.pid")
 CLIENT_LOG = os.path.join(CONFIG_DIR, "client.log")
@@ -54,7 +54,7 @@ def listen_for_notifications(config):
                 title, text = tuple(msg['data'].split(':'))
                 text = text.strip()
             else:
-                title = 'Notistream'
+                title = 'Lerner'
                 text = msg['data']
             n = Notify.Notification.new(title, text, None)
             n.show()
