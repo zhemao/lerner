@@ -55,7 +55,10 @@ def twilio():
 
     return response
 
-if __name__ == '__main__':
+def start_server():
     port = app.config.get('WEB_PORT', 8080)
     
     WSGIServer(('0.0.0.0', port), app).serve_forever()
+
+if __name__ == '__main__':
+    start_server()

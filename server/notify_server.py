@@ -81,9 +81,12 @@ class Notifier:
         if len(AUTH) == 0:
             self.authenticated[sock.sock.fileno()] = True
 
-if __name__ == '__main__':
+def start_server():
     notifier = Notifier()
     
     port = getattr(settings, 'PUBSUB_PORT', 6379)
     server = redisd.RedisServer(('0.0.0.0', port), notifier.commands)
     server.serve_forever()
+
+if __name__ == '__main__':
+    start_server()
