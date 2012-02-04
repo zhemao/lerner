@@ -1,6 +1,6 @@
 #!/bin/sh
 
-case $! in
+case $1 in
 	web)
 		PIDFILE="~/.lerner/webserver.pid"
 		if [ -f $PIDFILE ]; then
