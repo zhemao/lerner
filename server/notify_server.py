@@ -9,8 +9,14 @@ AUTH = getattr(settings, 'AUTH', '')
 
 class Notifier:
     def __init__(self):
+        # channels is a dict of dicts mapping channel names
+        # and socket filenos to socket objects
         self.channels = defaultdict(dict)
+        # clients is a dict of lists mapping a socket fileno
+        # to the list of channels to which the client is subscribing
         self.clients = {}
+        # authenticated is a dict of socket filenos to booleans
+        # indicating whether the client is authenticated yet
         self.authenticated = defaultdict(bool)
         self.commands = {
             'connect': self.on_connect,
@@ -21,6 +27,7 @@ class Notifier:
         }
 
     def subscribe(self, sock, *channames):
+        '''Subscribe a client if they are authenticated'''
         if not self.authenticated[sock.sock.fileno()]:
             sock.rep_error('Not Authenticated')
             return
@@ -31,6 +38,7 @@ class Notifier:
         self.clients[sock.sock.fileno()] = list(channames)
 
     def publish(self, sock, channame, message):
+        '''Publish a message to connected clients'''
         if not self.authenticated[sock.sock.fileno()]:
             sock.rep_error('Not Authenticated')
             return
@@ -51,6 +59,7 @@ class Notifier:
             sock.rep_integer(len(chan))
 
     def auth(self, sock, key):
+        '''Take authentication from a client'''
         if key == AUTH:
             self.authenticated[sock.sock.fileno()] = True
             sock.rep_line('OK')
@@ -58,6 +67,7 @@ class Notifier:
             sock.rep_error('Incorrect Auth Key')
 
     def remove_client(self, fileno):
+        '''Remove a client from this server'''
         if fileno in self.clients:
             for channame in self.clients[fileno]:
                 del self.channels[channame][fileno]
