@@ -143,7 +143,7 @@ def stop_daemon():
 
 def start_daemon(config):
     Notify.init("notistream")
-    print("Listening for notifications")
+    
     if os.path.isfile(CLIENT_PID):
         ans = raw_input("A client is already running. Restart it? [y/n] ")
         if ans == 'y':
@@ -151,6 +151,8 @@ def start_daemon(config):
         else:
             exit()
 
+    print("Listening for notifications")
+    
     daemonize(listen_for_notifications, (config,))
 
 def main():
