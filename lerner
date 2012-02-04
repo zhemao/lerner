@@ -9,6 +9,7 @@ import json
 import resource
 import signal
 import socket
+import time
 from gi.repository import Notify
 from redis.exceptions import ResponseError, ConnectionError
 
@@ -118,16 +119,27 @@ def daemonize(target, args=()):
     finally:
         cleanup(signal.SIGINT)
 
+def process_exists(pid):
+    return os.path.exists("/proc/" + str(pid))
+
 def stop_daemon():
+    print('Stopping daemon')
+    if not os.path.isfile(CLIENT_PID):
+        print("Daemon isn't running")
+        exit()
     f = open(CLIENT_PID)
     pid = int(f.read())
     f.close()
-    try:
-        os.kill(pid, signal.SIGINT)
-        os.kill(pid, signal.SIGTERM)
-        os.kill(pid, signal.SIGKILL)
-    except OSError:
-        pass
+        
+    signals = [signal.SIGINT, signal.SIGTERM, signal.SIGKILL]
+    
+    for sig in signals:
+        if process_exists(pid):
+            os.kill(pid, sig)
+            time.sleep(1)
+        else:
+            print("Process stopped")
+            break
 
 def start_daemon(config):
     Notify.init("notistream")
