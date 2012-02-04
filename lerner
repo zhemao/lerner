@@ -37,8 +37,6 @@ def create_config():
 
     print("Configuration file created in " + USER_CONFIG)
 
-    return open(USER_CONFIG)
-
 def listen_for_notifications(config):
     r = redis.Redis(host=config['host'], port=config['port'])
     
@@ -120,45 +118,66 @@ def daemonize(target, args=()):
     finally:
         cleanup(signal.SIGINT)
 
-def main():
+def stop_daemon():
+    f = open(CLIENT_PID)
+    pid = int(f.read())
+    f.close()
+    try:
+        os.kill(pid, signal.SIGINT)
+        os.kill(pid, signal.SIGTERM)
+        os.kill(pid, signal.SIGKILL)
+    except OSError:
+        pass
+
+def start_daemon(config):
     Notify.init("notistream")
+    print("Listening for notifications")
+    if os.path.isfile(CLIENT_PID):
+        ans = raw_input("A client is already running. Restart it? [y/n] ")
+        if ans == 'y':
+            stop_daemon()
+        else:
+            exit()
+
+    daemonize(listen_for_notifications, (config,))
+
+def main():
 
     if not os.path.isfile(USER_CONFIG):
         print "You do not yet have a configuration file."
         print "You will need one to continue."
         create = (raw_input("Do you want to create one? [y/n] ") == 'y')
         if create:
-            f = create_config()
+            create_config()
         else:
             print "Exiting..."
             exit(1)
-    else:
-        f = open(USER_CONFIG)
+    
+    f = open(USER_CONFIG)
 
     config = json.load(f)
     f.close()
     
-    if len(sys.argv) > 1 and sys.argv[1] == 'no-daemon':
+    if len(sys.argv) < 2:
+        print(('Commands\n\n'
+               '\tstart\n'
+               '\tstop\n'
+               '\treconfigure'))
+        exit(1)
+
+    if sys.argv[1] == 'debug':
         listen_for_notifications(config)
-        return
+    elif sys.argv[1] == 'start':
+        start_daemon(config)
+    elif sys.argv[1] == 'stop':
+       stop_daemon()
+    elif sys.argv[1] == 'reconfigure':
+        create_config()
+    else:
+        print('Invalid command')
+        
 
-    print("Listening for notifications")
-    if os.path.isfile(CLIENT_PID):
-        ans = raw_input("A client is already running. Restart it? [y/n] ")
-        if ans == 'y':
-            f = open(CLIENT_PID)
-            pid = int(f.read())
-            f.close()
-            try:
-                os.kill(pid, signal.SIGINT)
-                os.kill(pid, signal.SIGTERM)
-                os.kill(pid, signal.SIGKILL)
-            except OSError:
-                pass
-        else:
-            exit()
-
-    daemonize(listen_for_notifications, (config,))
+    
 
 if __name__ == '__main__':
     main()
