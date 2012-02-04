@@ -82,7 +82,7 @@ class RedisServer(StreamServer):
                     cmdargs = []
         closecmd = self.commands.get('close')
         if closecmd is not None:
-            closecmd(sock)
+            closecmd(rdsock)
         sock.close()
         
 

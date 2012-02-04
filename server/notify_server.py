@@ -64,7 +64,7 @@ class Notifier:
             del self.clients[fileno]
 
     def on_close(self, sock):
-        fileno = sock.fileno()
+        fileno = sock.sock.fileno()
         self.remove_client(fileno)
     
     def on_connect(self, sock):
