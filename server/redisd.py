@@ -102,7 +102,7 @@ class RedisServer(StreamServer):
         # If the client has closed the connection, run the close handler
         closecmd = self.commands.get('close')
         if closecmd is not None:
-            closecmd(sock)
+            closecmd(rdsock)
         sock.close()
         
 
