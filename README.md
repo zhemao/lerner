@@ -65,4 +65,6 @@ If you only want to start the pub/sub server, type
 
 To start both servers, run the script with no arguments.
 
+## License
 
+Lerner is released under an MIT License, reproduced in LICENSE
