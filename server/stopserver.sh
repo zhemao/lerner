@@ -1,15 +1,17 @@
 #!/bin/sh
 
-case $! in
+case $1 in
 	web)
-		PIDFILE="~/.lerner/webserver.pid"
+		PIDFILE="$HOME/.lerner/webserver.pid"
 		if [ -f $PIDFILE ]; then
 			kill `cat $PIDFILE`
+			rm $PIDFILE
 		fi ;;
 	pubsub)
-		PIDFILE="~/lerner/pubsubserver.pid"
+		PIDFILE="$HOME/.lerner/pubsubserver.pid"
 		if [ -f $PIDFILE ]; then
 			kill `cat $PIDFILE`
+			rm $PIDFILE
 		fi ;;
 	*)
 		$0 web
