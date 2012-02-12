@@ -72,8 +72,11 @@ class RedisServer(StreamServer):
         nbytes = 0
         rdsock = RedisSocket(sock)
 
+
         if 'connect' in self.commands:
             self.commands['connect'](rdsock)
+
+        print("Connection from " + addr[0])
 
         for line in sock_readlines(sock):
             if len(line) == 0:
@@ -81,7 +84,7 @@ class RedisServer(StreamServer):
                 continue
             elif line[0] == '*' and nargs == 0:
                 # first line is number of arguments
-                ncmds = int(line[1:])
+                nargs = int(line[1:])
             elif line[0] == '$' and nbytes == 0:
                 # the number of bytes in the following argument
                 # this isn't really necessary
@@ -92,6 +95,7 @@ class RedisServer(StreamServer):
                 if len(cmdargs) == nargs:
                     # if we've reached the expected number of arguments
                     # find and execute the command
+                    print(addr[0] + ' ' + ' '.join(cmdargs))
                     nargs = 0
                     command = self.commands.get(cmdargs[0].lower())
                     if command is None:
